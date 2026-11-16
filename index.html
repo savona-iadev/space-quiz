@@ -173,6 +173,15 @@
       { category: "Extraordinary worlds", question: "Which planet rotates on its side?", answers: ["Mercury", "Uranus", "Jupiter", "Venus"], correct: 1, fact: "Uranus has an axial tilt of about 98 degrees, making it appear to roll around the Sun on its side." },
       { category: "The final frontier", question: "What is a light-year a measure of?", answers: ["A star's age", "The brightness of light", "Distance", "Time"], correct: 2, fact: "A light-year is the distance light travels in one year: about 9.46 trillion kilometers." }
     ];
+    function shuffleQuestions(items) {
+      const shuffled = [...items];
+      for (let index = shuffled.length - 1; index > 0; index--) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+      }
+      return shuffled;
+    }
+    let missionQuestions = shuffleQuestions(questions);
     let current = 0;
     let score = 0;
     let answered = false;
@@ -181,12 +190,12 @@
     const fill = document.querySelector(".progress-fill");
     function updateProgress(completed) {
       progress.setAttribute("aria-valuenow", completed);
-      fill.style.width = `${completed / questions.length * 100}%`;
+      fill.style.width = `${completed / missionQuestions.length * 100}%`;
     }
     function renderQuestion(focus = false) {
       answered = false;
-      const item = questions[current];
-      get("question-count").innerHTML = `Mission progress <strong>${String(current + 1).padStart(2, "0")} / 10</strong>`;
+      const item = missionQuestions[current];
+      get("question-count").innerHTML = `Mission progress <strong>${String(current + 1).padStart(2, "0")} / ${missionQuestions.length}</strong>`;
       get("category").textContent = item.category;
       get("question").textContent = item.question;
       get("answers").replaceChildren();
@@ -200,7 +209,7 @@
       });
       get("feedback").hidden = true;
       get("next").disabled = true;
-      get("next").innerHTML = `${current === questions.length - 1 ? "View results" : "Next question"} <span aria-hidden="true">&#8594;</span>`;
+      get("next").innerHTML = `${current === missionQuestions.length - 1 ? "View results" : "Next question"} <span aria-hidden="true">&#8594;</span>`;
       get("hint").textContent = "Select an answer to continue";
       updateProgress(current);
       if (focus) get("question").focus();
@@ -208,7 +217,7 @@
     function selectAnswer(selected) {
       if (answered) return;
       answered = true;
-      const item = questions[current];
+      const item = missionQuestions[current];
       const correct = selected === item.correct;
       if (correct) score++;
       get("score").textContent = score;
@@ -248,11 +257,12 @@
     }
     get("next").addEventListener("click", () => {
       if (!answered) return;
-      if (current === questions.length - 1) showResults();
+      if (current === missionQuestions.length - 1) showResults();
       else { current++; renderQuestion(true); }
     });
     get("restart").addEventListener("click", () => {
       current = 0; score = 0;
+      missionQuestions = shuffleQuestions(questions);
       get("score").textContent = "0";
       get("result").hidden = true;
       get("quiz").hidden = false;
